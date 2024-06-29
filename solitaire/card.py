@@ -9,7 +9,7 @@ CARD_OFFSET = 20
 
 
 class Card(ft.GestureDetector):
-    def __init__(self, solitaire, color_name):
+    def __init__(self, solitaire, suite, rank):
         super().__init__()
         #
         self.mouse_cursor = ft.MouseCursor.MOVE
@@ -24,11 +24,16 @@ class Card(ft.GestureDetector):
         self.slot = None
         self.card_offset = CARD_OFFSET
 
-        self.color = color_name
+        self.suite = suite
+        self.rank = rank
+        self.face_up = False
         self.content = ft.Container(
-            bgcolor=self.color,
             width=CARD_WIDTH,
             height=CARD_HEIGTH,
+            border_radius = ft.border_radius.all(5),
+            content = ft.Image(
+                src = "card_back.png"
+            )
         )
         self.draggable_pile = [self]
 

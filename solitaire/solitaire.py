@@ -78,8 +78,9 @@ class Solitaire(ft.Stack):
         Create a classick Klondike solitaire layout.
         <https://flet.dev/img/docs/solitaire-tutorial/solitaire-layout.svg>
         """
-        self.stock = Slot(top=0, left=0, border=ft.border.all(
-            color=ft.colors.BLACK, width=1))
+        self.stock = Slot(top=0, left=0,
+                          border=ft.border.all(1))
+
         self.waste = Slot(top=0, left=100, border=None)
 
         self.foundations = []
@@ -93,7 +94,7 @@ class Solitaire(ft.Stack):
         x = 0
         for i in range(7):
             self.tableau.append(Slot(top=150, left=x,
-            border=ft.border.all(1, "outline")))
+                                     border=ft.border.all(1, "outline")))
             x += 100
 
         self.controls.append(self.stock)
@@ -109,7 +110,7 @@ class Solitaire(ft.Stack):
         random.shuffle(self.cards)
         self.controls.extend(self.cards)
 
-        # Deal the cards to the tableau
+        # deal to tableau
         first_slot = 0
         remaining_cards = self.cards
 
@@ -120,7 +121,7 @@ class Solitaire(ft.Stack):
                 remaining_cards.remove(top_card)
             first_slot += 1
 
-        # Place remaining cards to the stock
+        # place remaining cards to stock pile
         for card in remaining_cards:
             card.place(self.stock)
 
@@ -130,3 +131,5 @@ class Solitaire(ft.Stack):
             slot.get_top_card().turn_face_up()
 
         self.update()
+        print("Cards have been dealed.")
+        print(self.tableau)

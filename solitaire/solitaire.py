@@ -173,3 +173,36 @@ class Solitaire(ft.Stack):
             card.turn_face_down()
             card.move_on_top()
             card.place(self.stock)
+
+    def check_win(self):
+        """
+        Check if the player has won the game.
+        """
+        cards_num = 0
+        for slot in self.foundations:
+            cards_num += len(slot.pile)
+        if cards_num == 52:
+            return True
+        return False
+
+    def fly_card(self, card):
+        card.animate_position = 1000
+        card.move_on_top()
+        card.top = random.randint(0, SOLITAIRE_HEIGHT)
+        card.left = random.randint(0, SOLITAIRE_WIDTH)
+        self.update()
+
+    def winning_sequence(self):
+        """
+        Display a winning message.
+        """
+        print("You won!")
+        for slot in self.foundations:
+            for card in slot.pile:
+                self.fly_card(card)
+        self.controls.append(
+            ft.AlertDialog(
+                title=ft.Text("Congratulations!"),
+                open=True,
+            )
+        )

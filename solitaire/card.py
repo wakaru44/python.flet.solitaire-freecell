@@ -89,6 +89,9 @@ class Card(ft.GestureDetector):
             # Add the card to the new slot's pile
             slot.pile.append(card)
 
+        if self.solitaire.check_win():
+            self.solitaire.winning_sequence()
+
         self.solitaire.update()
 
     def get_draggable_pile(self):
@@ -171,10 +174,26 @@ class Card(ft.GestureDetector):
 
     def doublclick(self, e: ft.MultiTapEvent):
         """Double click to move a card to the foundation."""
-        if self.slot in self.solitaire.tableau:
+        in_valid_slot = (self.slot in self.solitaire.tableau
+        or self.slot == self.solitaire.waste)
+        if in_valid_slot:
             # check each of the foundations for a valid place.
             for slot in self.solitaire.foundations:
                 if self.solitaire.check_foundations_rules(self, slot):
                     self.place(slot)
                     self.solitaire.update()
                     return
+            for slot in self.solitaire.tableau:
+                if self.solitaire.check_tableau_rules(self, slot):
+                    self.place(slot)
+                    self.move_on_top()
+                    self.solitaire.update()
+                    return
+
+            # if it failed doubleclicking randomly, punish the player with an alert
+            self.solitaire.controls.append(
+            ft.AlertDialog(
+                title=ft.Text("No random clicking!"),
+                open=True,
+            )
+        )

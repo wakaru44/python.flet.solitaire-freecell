@@ -1,0 +1,9 @@
+
+# IDE
+.DS_Store
+.vscode/
+
+# Python
+.venv/
+*pyc
+env/

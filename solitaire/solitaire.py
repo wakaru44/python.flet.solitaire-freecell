@@ -163,3 +163,13 @@ class Solitaire(ft.Stack):
             )
         else:
             return card.rank.name == "King"
+
+    def restart_stock(self):
+        """
+        Restarts the stock pile by moving all cards from the waste pile.
+        """
+        while len(self.waste.pile) > 0:
+            card = self.waste.get_top_card()
+            card.turn_face_down()
+            card.move_on_top()
+            card.place(self.stock)

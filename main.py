@@ -8,12 +8,13 @@ def main(page: ft.Page):
     """
     Free Cell Solitaire from the flet solitaire tutorial.
     """
-    # Cosas de solitario
-    def place(card: ft.GestureDetector, slot: ft.Container):
-        """Place a card into a slot."""
+
+    def place(card, slot):
+        """Snap a card into a slot."""
         card.top = slot.top
         card.left = slot.left
 
+    # Cosas de solitario
     def bounce_back(game, card):
         """Return a card to its original position."""
         card.top = game.start_top
@@ -41,17 +42,40 @@ def main(page: ft.Page):
     def drop(e: ft.DragEndEvent):
         """If a card is close enough to a slot, snap it into place."""
         snap_distance = 50  # pixels
-        if (
-            abs(e.control.top - slot.top) < snap_distance
-            and abs(e.control.left - slot.left) < snap_distance
-        ):
-            place(e.control, slot)
-        else:
-            bounce_back(solitaire, e.control)
+
+        for slot in slots:
+            if (
+                abs(e.control.top - slot.top) < snap_distance
+                and abs(e.control.left - slot.left) < snap_distance
+            ):
+                place(e.control, slot)
+                e.control.update()
+                return
+
+        # or bounce back
+        bounce_back(solitaire, e.control)
         e.control.update()
 
     # Games starts here
-    slot = ft.Container(
+    slot1 = ft.Container(
+        bgcolor=ft.colors.GREEN,
+        width=70,
+        height=100,
+        left=0,
+        top=0,
+        border=ft.border.all(color=ft.colors.BLACK, width=1),
+    )
+
+    slot2 = ft.Container(
+        bgcolor=ft.colors.GREEN,
+        width=70,
+        height=100,
+        left=100,
+        top=0,
+        border=ft.border.all(color=ft.colors.BLACK, width=1),
+    )
+
+    slot3 = ft.Container(
         bgcolor=ft.colors.GREEN,
         width=70,
         height=100,
@@ -59,6 +83,8 @@ def main(page: ft.Page):
         top=0,
         border=ft.border.all(color=ft.colors.BLACK, width=1),
     )
+
+    slots = [slot1, slot2, slot3]
 
     card1 = ft.GestureDetector(
         mouse_cursor=ft.MouseCursor.MOVE,
@@ -77,25 +103,18 @@ def main(page: ft.Page):
         on_pan_start=start_drag,
         on_pan_update=drag,
         on_pan_end=drop,
-        left=75,
+        left=100,
         top=0,
         content=ft.Container(bgcolor=ft.colors.BLUE, width=70, height=100),
     )
 
-    card3 = ft.GestureDetector(
-        mouse_cursor=ft.MouseCursor.MOVE,
-        drag_interval=5,
-        on_pan_start=start_drag,
-        on_pan_update=drag,
-        on_pan_end=drop,
-        left=75,
-        top=0,
-        content=ft.Container(bgcolor=ft.colors.RED, width=70, height=100),
-    )
-
     solitaire = Solitaire()
 
-    controls = [card3, card2, card1, slot]
+    controls = slots + [card1, card2]
+
+    # deal cards
+    place(card1, slot1)
+    place(card2, slot2)
     page.add(ft.Stack(controls=controls, width=1000, height=500))
 
 

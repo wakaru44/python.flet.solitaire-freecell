@@ -9,11 +9,15 @@ def main(page: ft.Page):
     Free Cell Solitaire from the flet solitaire tutorial.
     """
     # Cosas de solitario
+    def place(card: ft.GestureDetector, slot: ft.Container):
+        """Place a card into a slot."""
+        card.top = slot.top
+        card.left = slot.left
+
     def bounce_back(game, card):
         """Return a card to its original position."""
         card.top = game.start_top
         card.left = game.start_left
-        card.update()
 
     def move_on_top(card, controls):
         """Push card to the top of the pile while dragging."""
@@ -26,7 +30,6 @@ def main(page: ft.Page):
         move_on_top(e.control, controls)
         solitaire.start_top = e.control.top
         solitaire.start_left = e.control.left
-        e.control.update()
 
     # Cosas de cartas
     def drag(e: ft.DragUpdateEvent):
@@ -46,12 +49,6 @@ def main(page: ft.Page):
         else:
             bounce_back(solitaire, e.control)
         e.control.update()
-
-    def place(card: ft.GestureDetector, slot: ft.Container):
-        """Place a card into a slot."""
-        card.top = slot.top
-        card.left = slot.left
-        page.update()
 
     # Games starts here
     slot = ft.Container(

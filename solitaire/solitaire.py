@@ -28,7 +28,6 @@ class Solitaire(ft.Stack):
         card2 = Card(self, color_name = "BLUE")
         self.cards = [card1, card2]
 
-
     def create_slots(self):
         self.slots.append(Slot(top=0, left=0))
         self.slots.append(Slot(top=0, left=200))
@@ -41,3 +40,4 @@ class Solitaire(ft.Stack):
         for card in self.cards:
             card.place(self.slots[0])
         self.update()
+        

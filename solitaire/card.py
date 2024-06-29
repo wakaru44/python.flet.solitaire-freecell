@@ -3,7 +3,7 @@ import flet as ft
 
 # Constants
 CARD_WIDTH = 70
-CARD_HEIGHT = 100
+CARD_HEIGTH = 100
 DROP_PROXIMITY = 20
 
 
@@ -25,7 +25,7 @@ class Card(ft.GestureDetector):
         self.content = ft.Container(
             bgcolor=self.color,
             width=CARD_WIDTH,
-            height=CARD_HEIGHT,
+            height=CARD_HEIGTH,
         )
 
     def move_on_top(self):
@@ -44,6 +44,7 @@ class Card(ft.GestureDetector):
         """Snap a card into a slot."""
         self.top = slot.top
         self.left = slot.left
+        self.slot = slot
 
     def start_drag(self, e: ft.DragStartEvent):
         """Start dragging a card to keep track of prev. positions."""

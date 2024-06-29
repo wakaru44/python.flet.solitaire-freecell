@@ -44,6 +44,12 @@ class Card(ft.GestureDetector):
             self.rank.name}_{self.suite.name}.svg"
         self.solitaire.update()
 
+    def turn_face_down(self):
+        """Hides card"""
+        self.face_up = False
+        self.content.content.src = "/images/card_back.png"
+        self.solitaire.update()
+
     def move_on_top(self):
         """Brings draggable card pile to the top of the stack while dragging."""
 
@@ -90,14 +96,20 @@ class Card(ft.GestureDetector):
         Returns list of cards that will be dragged together starting with
         the current card.
         """
-        if self.slot is not None:
-            self.draggable_pile = self.slot.pile[self.slot.pile.index(self):]
-        else:  # slot is None when the cards are dealt and need to be placed first time.
+        
+        if (
+            self.slot is not None
+            and self.slot != self.solitaire.stock
+            and self.slot != self.solitaire.waste
+        ):
+            self.draggable_pile = self.slot.pile[self.slot.pile.index(self) :]
+        else:  # slot == None when the cards are dealed and need to be place in slot for the first time
             self.draggable_pile = [self]
 
     def start_drag(self, e: ft.DragStartEvent):
         """Start dragging a card to keep track of prev. positions."""
         if self.face_up:
+            self.get_draggable_pile()
             self.move_on_top()
             self.solitaire.update()
 
@@ -128,7 +140,7 @@ class Card(ft.GestureDetector):
                     abs(self.top - (slot.top + len(slot.pile) * CARD_OFFSET))
                     < DROP_PROXIMITY
                     and abs(self.left - slot.left) < DROP_PROXIMITY
-                ):
+                ) and self.solitaire.check_tableau_rules(self, slot):
                     # TODO: maybe this can be changed to work on the top of teh pile too, more comfy.
                     # To do that you can use the same _is_near_enough function to check if the card is near the top card of the pile.
                     self.place(slot)
@@ -138,7 +150,7 @@ class Card(ft.GestureDetector):
                 for slot in self.solitaire.foundations:
                     # check the foundations rules before placing the card
                     if (_is_near_enough(self, slot)
-                    and self.solitaire.check_foundations_rules(self, slot)):
+                            and self.solitaire.check_foundations_rules(self, slot)):
                         self.place(slot)
                         return
 
@@ -156,8 +168,6 @@ class Card(ft.GestureDetector):
             self.move_on_top()
             self.place(self.solitaire.waste)
             self.turn_face_up()
-
-
 
     def doublclick(self, e: ft.MultiTapEvent):
         """Double click to move a card to the foundation."""

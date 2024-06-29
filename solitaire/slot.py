@@ -27,3 +27,7 @@ class Slot(ft.Container):
         """
         if len(self.pile) > 0:
             return self.pile[-1]
+
+    def click(self, e):
+        if self == self.solitaire.stock:
+            self.solitaire.restart_stock()

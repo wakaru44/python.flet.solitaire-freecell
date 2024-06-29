@@ -133,3 +133,33 @@ class Solitaire(ft.Stack):
         self.update()
         print("Cards have been dealed.")
         print(self.tableau)
+
+    def check_foundations_rules(self, card, slot):
+        """
+        Validate that the card can be placed in the top foundations slots.
+        """
+        top_card = slot.get_top_card()
+        if top_card is not None:
+            return (
+                card.suite.name == top_card.suite.name
+                and card.rank.value - top_card.rank.value == 1
+            )
+        else:
+            return card.rank.name == "Ace"
+
+    def check_tableau_rules(self, card, slot):
+        """
+        Validate that the card can be placed in the tableau slots.
+        A card has to be of alternating color,
+        decrease in rank by 1
+        and be face up.
+        """
+        top_card = slot.get_top_card()
+        if top_card is not None:
+            return (
+                card.suite.color != top_card.suite.color
+                and top_card.rank.value - card.rank.value == 1
+                and top_card.face_up
+            )
+        else:
+            return card.rank.name == "King"

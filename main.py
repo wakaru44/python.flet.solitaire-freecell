@@ -1,5 +1,5 @@
 import flet as ft
-from solitaire import Solitaire
+from solitaire import KlondikeSolitaire
 from solitaire.menu import MyMenu
 
 
@@ -20,7 +20,8 @@ def main(page: ft.Page):
         solitaire.resize(page.width, page.height)
         page.update()
 
-    solitaire = Solitaire()
+    print(f"Window size: {page.width} x {page.height}")
+    solitaire = KlondikeSolitaire()
     menubar = MyMenu(controls=None, solitaire=solitaire)
 
     page.on_resize = page_resize

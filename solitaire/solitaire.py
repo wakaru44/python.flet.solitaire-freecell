@@ -2,6 +2,8 @@
 import random
 
 import flet as ft
+# from card import Card
+# from slot import Slot
 from .card import Card
 from .slot import Slot
 
@@ -23,25 +25,22 @@ class Rank:
 
 
 class Solitaire(ft.Stack):
-    def __init__(self):
+    def __init__(self, width=None, height=None, seed: int = 11982):
         super().__init__()
         self.controls = []
-        self.width = SOLITAIRE_WIDTH
-        self.height = SOLITAIRE_HEIGHT
         # self.seed = random.randint(1,32000) # win32 freecell seed range.
+        # self.seed = 11982  # famous seed imposible to win in freecell win32
         # TODO: put the proper seed stuff here.
-        self.seed = 11982  # famous seed imposible to win in freecell win32
-        print("Seed:", self.seed)
+        self.seed = seed
+
+        # Dimensions and sizing
+        self.width = SOLITAIRE_WIDTH if width is None else width
+        self.height = SOLITAIRE_HEIGHT if height is None else height
         self.max_card_width = 75  # initially only
         self.max_card_height = 100  # initially only
         self.separator = 25  # initially only
-
-        self.on_tap = lambda e: print("Solitaire tapped")
-
-    def did_mount(self):
-        self.create_card_deck()
-        self.create_slots()
-        self.deal_cards()
+        self.first_row = 0 # this one actually stays
+        self.second_row = 150  # initially only
 
     def _max_square(self, width, height):
         """
@@ -50,7 +49,8 @@ class Solitaire(ft.Stack):
         @param height: alto de la pantalla
         @return: tupla con el ancho y alto del cuadrado maximo.
         """
-        ratio = "2:1"
+        ratio = "16:9"
+        #ratio = "4:3" # kinda weird with the menu in the bottom.
         ratio_width, ratio_height = map(int, ratio.split(":"))
         if width / height > ratio_width / ratio_height:
             max_width = height * ratio_width // ratio_height
@@ -85,6 +85,9 @@ class Solitaire(ft.Stack):
             int(ratio.split(":")[1]) / int(ratio.split(":")[0])
         return (card_width, card_height)
 
+    def get_card_size(self):
+        return (self.max_card_width, self.max_card_height)
+
     def resize(self, width, height):
         """
         Calculate the new size of the solitaire game.
@@ -97,11 +100,28 @@ class Solitaire(ft.Stack):
         self.max_card_width, self.max_card_height = self._card_size(
             new_width, new_height)
         self.separator = self.max_card_width / 3
+        # Todo choose the separator.
+        self.second_row = self.max_card_height + self.separator * 2
 
-        print("Updating solt size")
+        print("Updating slot size")
         for slot in [self.stock, self.waste, *self.foundations, *self.tableau]:
-            slot.resize(self.max_card_width, self.max_card_height)
+            slot.resize(self.max_card_width,
+                        self.max_card_height, self.separator)
         self.update()
+
+
+class KlondikeSolitaire(Solitaire):
+    def __init__(self, width=None, height=None, seed: int = 11982):
+        super().__init__(width, height, seed)
+        self.controls = []
+
+        # Event Handling
+        self.on_tap = lambda e: print("Solitaire tapped")
+
+    def did_mount(self):
+        self.create_card_deck()
+        self.create_slots()
+        self.deal_cards()
 
     def create_card_deck(self):
         """
@@ -150,36 +170,51 @@ class Solitaire(ft.Stack):
         The positions of the slots are also numbered columns 0 to 6, 7 colunms.
         """
 
-        self.stock = Slot(top=0, left=0,
-                          border=ft.border.all(1), column_number=0)
+        self.stock = Slot(top=self.first_row, left=0,
+                          border=ft.border.all(1), column_number=0, row=0)
 
-        self.waste = Slot(top=0, left=100, border=None, column_number=1)
+        self.waste = Slot(top=self.first_row, left=100,
+                          border=None, column_number=1, row=0)
 
         self.foundations = []
         x = (self.max_card_width + self.separator) * \
             3  # foundations starts in the 4th column
         for i in range(4):
             self.foundations.append(
-                Slot(top=0, left=x, border=ft.border.all(1, "outline"), column_number=i + 3))
+                Slot(
+                    top=self.first_row,
+                    left=x,
+                    border=ft.border.all(1, "outline"),
+                    column_number=i + 3,
+                    row=0
+                )
+            )
             x += (self.max_card_width + self.separator)
 
         self.tableau = []
         x = 0
         for i in range(7):
-            self.tableau.append(Slot(top=150, left=x,
-                                     border=ft.border.all(1, "outline"), column_number=i))
+            self.tableau.append(
+                Slot(
+                    top=self.second_row,
+                    left=x,
+                    border=ft.border.all(1, "outline"),
+                    column_number=i,
+                    row=1
+                )
+            )
             x += (self.max_card_width + self.separator)
 
         self.controls.append(self.stock)
         self.controls.append(self.waste)
         self.controls.extend(self.foundations)
         self.controls.extend(self.tableau)
-        self.update()
 
     def deal_cards(self):
         """
         Get a french deck of cards and deal them to the slots.
         """
+        print("Dealing cards... Seed: ", self.seed)
         random.shuffle(self.cards)
         self.controls.extend(self.cards)
 

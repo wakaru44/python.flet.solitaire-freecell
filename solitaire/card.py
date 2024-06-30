@@ -1,6 +1,9 @@
 
 import flet as ft
 
+BORDER_RADIUS = 6
+SLOT_WIDTH = 63.5
+SLOT_HEIGHT = 88.9
 
 class Card(ft.GestureDetector):
     def __init__(self, solitaire, suite, rank):
@@ -25,15 +28,16 @@ class Card(ft.GestureDetector):
         self.top = None
         self.left = None
         self.slot = None
-        self.width = 70
-        self.height = 100
+        # It sholud be 63.5 x 88.9 according to <https://en.wikipedia.org/w/index.php?title=Standard_52-card_deck&section=4>
+        self.width = SLOT_WIDTH
+        self.height = SLOT_HEIGHT
         self.card_offset = 20
         self.drop_proximity = 20
 
         self.content = ft.Container(
             width=self.width,
             height=self.height,
-            border_radius=ft.border_radius.all(6),
+            border_radius=ft.border_radius.all(BORDER_RADIUS),
             content=ft.Image(
                 src="/images/card_back.png"
             )
@@ -42,13 +46,16 @@ class Card(ft.GestureDetector):
     def is_on_stock(self):
         return self.slot == self.solitaire.stock
 
+    def is_on_waste(self):
+        return self.slot == self.solitaire.waste
+
     def resize(self, width, height, top, card_offset):
         self.content.width = width
         self.content.height = height
         self.width = width
         self.height = height
         self.card_offset = card_offset
-        if self.is_on_stock():
+        if self.is_on_stock() or self.is_on_waste():
             offset = 0
         else:
             offset = self.card_offset
@@ -150,25 +157,26 @@ class Card(ft.GestureDetector):
     def drop(self, e: ft.DragEndEvent):
         """If a card is close enough to a slot, snap it into place."""
 
-        def _is_near_enough(card, slot):
+        def _is_near_enough(card, slot, pile_length=0):
             return (
-                abs(card.top - slot.top) < self.drop_proximity
+                abs(card.top - (slot.top + (pile_length * self.card_offset)))
+                < self.drop_proximity
                 and abs(card.left - slot.left) < self.drop_proximity
             )
 
         if self.face_up:
-
+            # find a place for it in the tableau
             for slot in self.solitaire.tableau:
                 if (
-                    abs(self.top - (slot.top + len(slot.pile) * self.card_offset))
-                    < self.drop_proximity
-                    and abs(self.left - slot.left) < self.drop_proximity
-                ) and self.solitaire.check_tableau_rules(self, slot):
-                    # TODO: maybe this can be changed to work on the top of teh pile too, more comfy.
-                    # To do that you can use the same _is_near_enough function to check if the card is near the top card of the pile.
+                    _is_near_enough(self, slot, len(slot.pile))
+                    and self.solitaire.check_tableau_rules(self, slot)
+                ):
                     self.place(slot)
                     return
+                else:
+                    print("No place for the card in the tableau")
 
+            # or place it in the foundations
             if len(self.draggable_pile) == 1:
                 for slot in self.solitaire.foundations:
                     # check the foundations rules before placing the card
@@ -180,6 +188,12 @@ class Card(ft.GestureDetector):
         # or bounce back
         self.bounce_back()
 
+    def deal_to_waste(self):
+        """Send a card to the waste pile."""
+        self.move_on_top()
+        self.place(self.solitaire.waste)
+        self.turn_face_up()
+
     def click(self, e: ft.TapEvent):
         """Turn the card face up ."""
         if self.slot in self.solitaire.tableau:
@@ -189,9 +203,7 @@ class Card(ft.GestureDetector):
         elif self.slot == self.solitaire.stock:
             # If it's the stock pile, then deal a card to the waste pile.
             # print("Dealing a card to the waste pile.")
-            self.move_on_top()
-            self.place(self.solitaire.waste)
-            self.turn_face_up()
+            self.deal_to_waste()
         else:
             print("cLicker Random mate")
 
@@ -199,26 +211,30 @@ class Card(ft.GestureDetector):
         """Double click to move a card to the foundation."""
         in_valid_slot = (self.slot in self.solitaire.tableau
                          or self.slot == self.solitaire.waste)
-        if in_valid_slot:
-            # check each of the foundations for a valid place.
-            for slot in self.solitaire.foundations:
-                if self.solitaire.check_foundations_rules(self, slot):
-                    self.place(slot)
-                    self.solitaire.update()
-                    return
-            for slot in self.solitaire.tableau:
-                if self.solitaire.check_tableau_rules(self, slot):
-                    self.place(slot)
-                    self.move_on_top()
-                    self.solitaire.update()
-                    return
+        if not in_valid_slot:
+            return
 
-            # if it failed doubleclicking randomly, punish the player with an alert
-            """
-            self.solitaire.controls.append(
-                ft.AlertDialog(
-                    title=ft.Text("No random clicking!"),
-                    open=True,
-                )
+        # check each of the foundations for a valid place.
+        for slot in self.solitaire.foundations:
+            if self.solitaire.check_foundations_rules(self, slot):
+                self.place(slot)
+                self.move_on_top()
+                self.solitaire.update()
+                return
+        for slot in self.solitaire.tableau:
+            if self.solitaire.check_tableau_rules(self, slot):
+                self.get_draggable_pile()
+                self.place(slot)
+                self.move_on_top()
+                self.solitaire.update()
+                return
+
+        # if it failed doubleclicking randomly, punish the player with an alert
+        """
+        self.solitaire.controls.append(
+            ft.AlertDialog(
+                title=ft.Text("No random clicking!"),
+                open=True,
             )
-            """
+        )
+        """

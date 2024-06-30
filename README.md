@@ -33,14 +33,29 @@ hay 1.75x10^64 combinaciones. (segun GPT-3).
 
 El comparador de juegos deberia tener esto en cuenta, y no comparar juegos repetidos.
 
-## TODO y Desarrollo
+### Flet. container no es gesture dectector.
+
+mientras que las cartas son 'gesture detectors', los contenedores no lo son.
+y las cartas usan 'on_tap' y los containers 'on_click'. o algo asi.
+
+## Tasks y Desarrollo
 
 - [x] Crear un tablero
-- [ ] Separar logica de tablero, de la logica de juego/Klondike y FreeCell
-- [ ] Mejorar las posiciones verticales. y tb la separacion de cartas
-- [ ] Arreglar el 'restart stock' que no se reinicia.
+- [x] Separar logica de tablero, de la logica de juego/Klondike y FreeCell
+- [x] Mejorar las posiciones verticales. y tb la separacion de cartas
+- [x] Bug: las cartas no vuelven a fundaciones. el drop nofunciona. era un mal _is_near_enough.
+- [x] Arreglar el 'restart stock' que no se reinicia. era que el container usa on_click no on_tap.
+- [x] Refactor card sizes based on <https://en.wikipedia.org/w/index.php?title=Standard_52-card_deck&section=4>
+- [x] UI: la proporcion de las cartas es rara, y la separacion demasiada.
+- [x] Bug: doble click en carta no mueve el dragable stack.
+- [x] Feat: Implantar 'New Game' y refactorizar componentes.
+- [x] UI: el resize parece que se ha roto, quiza despues de 'new game'. era problema de que no se estaba eliminanndo.
+- [x] Feat: crear nuevos juegos.
+- [ ] Feat: Escribir un solitario free cell
 - [ ] Crear un menu de opciones un poco decente.
-- [ ] ter minar lo de las semillas aleatorias.
+- [ ] Bug: el envio automatico en klondike se salta algunas normas y coloca cartas fuera de orden.
+- [ ] UI: the menu dosnt close when clicking.
+- [ ] terminar lo de las semillas aleatorias.
 
 ### Wish list
 

@@ -37,6 +37,10 @@ class Card(ft.GestureDetector):
         )
         self.draggable_pile = [self]
 
+    def resize(self, width, height):
+        self.content.width = width
+        self.content.height = height
+
     def turn_face_up(self):
         """Reveal the card."""
         self.face_up = True

@@ -11,15 +11,28 @@ class Slot(ft.Container):
     A slot is a container that can hold cards.
     """
 
-    def __init__(self, top, left, border):
+    def __init__(self, top, left, border, column_number):
         super().__init__()
         self.pile = []
         self.width = SLOT_WIDTH
         self.height = SLOT_HEIGHT
+        assert left is not None, "left must be defined and greater than 0"
         self.left = left
+        assert top is not None, "top must be defined and greater than 0"
         self.top = top
         self.border = border
         self.border_radius = ft.border_radius.all(6)
+        assert column_number >= 0, "column_number must be greater than or equal to 0"
+        self.column_number = column_number
+
+    def resize(self, width, height):
+        self.width = width
+        self.height = height
+        separator = width / 3
+        self.left = self.column_number * (width + separator)
+        for card in self.pile:
+            card.resize(width, height)
+            card.left = self.left
 
     def get_top_card(self):
         """

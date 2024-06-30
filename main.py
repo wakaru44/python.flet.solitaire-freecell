@@ -12,10 +12,11 @@ def main(page: ft.Page):
     def page_resize(e):
         # solitaire.width = page.width
         # solitaire.height = page.height
-        page.snack_bar = ft.SnackBar(
+        page.overlay.append( ft.SnackBar(
             ft.Text(f'New page size => width: {page.width}, height: {page.height}')
-        )
-        page.snack_bar.open = True
+        ))
+        page.overlay[0].open = True
+        solitaire.resize(page.width, page.height)
         page.update()
 
     solitaire = Solitaire()

@@ -28,11 +28,75 @@ class Solitaire(ft.Stack):
         self.controls = []
         self.width = SOLITAIRE_WIDTH
         self.height = SOLITAIRE_HEIGHT
+        self.seed = None
+        self.max_card_width = 75  # initially only
+        self.max_card_height = 100  # initially only
+        self.separator = 25  # initially only
 
     def did_mount(self):
         self.create_card_deck()
         self.create_slots()
         self.deal_cards()
+
+    def _max_square(self, width, height):
+        """
+        find the biggest rectangle of a given ratio that fits in the screen.
+        @param width: ancho de la pantalla
+        @param height: alto de la pantalla
+        @return: tupla con el ancho y alto del cuadrado maximo.
+        """
+        ratio = "2:1"
+        ratio_width, ratio_height = map(int, ratio.split(":"))
+        if width / height > ratio_width / ratio_height:
+            max_width = height * ratio_width // ratio_height
+            max_height = height
+        else:
+            max_width = width
+            max_height = width * ratio_height // ratio_width
+        return (max_width, max_height)
+
+    def _card_size(self, table_width, table_height):
+        """
+        Calcula el tamano de la carta en base al cuadrado maximo.
+        @param width: ancho de la pantalla
+        @param height: alto de la pantalla
+        @return: tupla con el ancho y alto de la carta.
+        """
+        ratio = "384:576"
+        rows = 8
+        cols = 7
+        margin = 25
+
+        min_width = 1000
+        min_height = 500
+
+        # defensive programming
+        if table_width < min_width or table_height < min_height:
+            table_width = min_width
+            table_height = min_height
+
+        card_width = (table_width / rows) - (margin * 2)
+        card_height = card_width * \
+            int(ratio.split(":")[1]) / int(ratio.split(":")[0])
+        return (card_width, card_height)
+
+    def resize(self, width, height):
+        """
+        Calculate the new size of the solitaire game.
+        Update the size of the cards and the slots.
+        """
+        # calculate new sizes
+        new_width, new_height = self._max_square(width, height)
+        self.width = new_width
+        self.height = new_height
+        self.max_card_width, self.max_card_height = self._card_size(
+            new_width, new_height)
+        self.separator = self.max_card_width / 3
+
+        print("Updating solt size")
+        for slot in [self.stock, self.waste, *self.foundations, *self.tableau]:
+            slot.resize(self.max_card_width, self.max_card_height)
+        self.update()
 
     def create_card_deck(self):
         """
@@ -77,25 +141,29 @@ class Solitaire(ft.Stack):
         """
         Create a classick Klondike solitaire layout.
         <https://flet.dev/img/docs/solitaire-tutorial/solitaire-layout.svg>
-        """
-        self.stock = Slot(top=0, left=0,
-                          border=ft.border.all(1))
 
-        self.waste = Slot(top=0, left=100, border=None)
+        The positions of the slots are also numbered columns 0 to 6, 7 colunms.
+        """
+
+        self.stock = Slot(top=0, left=0,
+                          border=ft.border.all(1), column_number=0)
+
+        self.waste = Slot(top=0, left=100, border=None, column_number=1)
 
         self.foundations = []
-        x = 300
+        x = (self.max_card_width + self.separator) * \
+            3  # foundations starts in the 4th column
         for i in range(4):
             self.foundations.append(
-                Slot(top=0, left=x, border=ft.border.all(1, "outline")))
-            x += 100
+                Slot(top=0, left=x, border=ft.border.all(1, "outline"), column_number=i + 3))
+            x += (self.max_card_width + self.separator)
 
         self.tableau = []
         x = 0
         for i in range(7):
             self.tableau.append(Slot(top=150, left=x,
-                                     border=ft.border.all(1, "outline")))
-            x += 100
+                                     border=ft.border.all(1, "outline"), column_number=i))
+            x += (self.max_card_width + self.separator)
 
         self.controls.append(self.stock)
         self.controls.append(self.waste)
@@ -107,6 +175,9 @@ class Solitaire(ft.Stack):
         """
         Get a french deck of cards and deal them to the slots.
         """
+        # self.seed = random.randint(1,32000) # win32 freecell seed range.
+        self.seed = 11982  # famous seed imposible to win in freecell win32
+        print("Seed:", self.seed)
         random.shuffle(self.cards)
         self.controls.extend(self.cards)
 
@@ -173,6 +244,7 @@ class Solitaire(ft.Stack):
             card.turn_face_down()
             card.move_on_top()
             card.place(self.stock)
+            print("And another round")
 
     def check_win(self):
         """

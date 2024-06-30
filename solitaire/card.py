@@ -1,17 +1,11 @@
 
 import flet as ft
 
-# Constants
-CARD_WIDTH = 70
-CARD_HEIGTH = 100
-DROP_PROXIMITY = 20
-CARD_OFFSET = 20
-
 
 class Card(ft.GestureDetector):
     def __init__(self, solitaire, suite, rank):
         super().__init__()
-        #
+        # Handlers
         self.mouse_cursor = ft.MouseCursor.MOVE
         self.drag_interval = 5
         self.on_pan_start = self.start_drag
@@ -20,22 +14,48 @@ class Card(ft.GestureDetector):
         self.on_tap = self.click
         self.on_double_tap = self.doublclick
 
+        # Game properties
         self.suite = suite
         self.rank = rank
         self.face_up = False
+        self.solitaire = solitaire
+        self.draggable_pile = [self]
+
+        # Positional properties
         self.top = None
         self.left = None
-        self.solitaire = solitaire
         self.slot = None
+        self.width = 70
+        self.height = 100
+        self.card_offset = 20
+        self.drop_proximity = 20
+
         self.content = ft.Container(
-            width=CARD_WIDTH,
-            height=CARD_HEIGTH,
+            width=self.width,
+            height=self.height,
             border_radius=ft.border_radius.all(6),
             content=ft.Image(
                 src="/images/card_back.png"
             )
         )
-        self.draggable_pile = [self]
+
+    def is_on_stock(self):
+        return self.slot == self.solitaire.stock
+
+    def resize(self, width, height, top, card_offset):
+        self.content.width = width
+        self.content.height = height
+        self.width = width
+        self.height = height
+        self.card_offset = card_offset
+        if self.is_on_stock():
+            offset = 0
+        else:
+            offset = self.card_offset
+        self.top = (
+            (self.slot.pile.index(self) * offset)
+            + (self.height + self.card_offset) * self.slot.row
+        )
 
     def turn_face_up(self):
         """Reveal the card."""
@@ -63,7 +83,7 @@ class Card(ft.GestureDetector):
         for card in self.draggable_pile:
             if card.slot in self.solitaire.tableau:
                 card.top = card.slot.top + \
-                    card.slot.pile.index(card) * CARD_OFFSET
+                    card.slot.pile.index(card) * self.card_offset
             else:
                 card.top = card.slot.top
             card.left = card.slot.left
@@ -74,7 +94,7 @@ class Card(ft.GestureDetector):
 
         for card in self.draggable_pile:
             if slot in self.solitaire.tableau:
-                card.top = slot.top + len(slot.pile) * CARD_OFFSET
+                card.top = slot.top + len(slot.pile) * self.card_offset
             else:
                 card.top = slot.top
             card.left = slot.left
@@ -99,13 +119,13 @@ class Card(ft.GestureDetector):
         Returns list of cards that will be dragged together starting with
         the current card.
         """
-        
+
         if (
             self.slot is not None
             and self.slot != self.solitaire.stock
             and self.slot != self.solitaire.waste
         ):
-            self.draggable_pile = self.slot.pile[self.slot.pile.index(self) :]
+            self.draggable_pile = self.slot.pile[self.slot.pile.index(self):]
         else:  # slot == None when the cards are dealed and need to be place in slot for the first time
             self.draggable_pile = [self]
 
@@ -122,7 +142,7 @@ class Card(ft.GestureDetector):
             for card in self.draggable_pile:
                 card.top = (
                     max(0, self.top + e.delta_y)
-                    + self.draggable_pile.index(card) * CARD_OFFSET
+                    + self.draggable_pile.index(card) * self.card_offset
                 )
                 card.left = max(0, self.left + e.delta_x)
                 self.solitaire.update()
@@ -132,17 +152,17 @@ class Card(ft.GestureDetector):
 
         def _is_near_enough(card, slot):
             return (
-                abs(card.top - slot.top) < DROP_PROXIMITY
-                and abs(card.left - slot.left) < DROP_PROXIMITY
+                abs(card.top - slot.top) < self.drop_proximity
+                and abs(card.left - slot.left) < self.drop_proximity
             )
 
         if self.face_up:
 
             for slot in self.solitaire.tableau:
                 if (
-                    abs(self.top - (slot.top + len(slot.pile) * CARD_OFFSET))
-                    < DROP_PROXIMITY
-                    and abs(self.left - slot.left) < DROP_PROXIMITY
+                    abs(self.top - (slot.top + len(slot.pile) * self.card_offset))
+                    < self.drop_proximity
+                    and abs(self.left - slot.left) < self.drop_proximity
                 ) and self.solitaire.check_tableau_rules(self, slot):
                     # TODO: maybe this can be changed to work on the top of teh pile too, more comfy.
                     # To do that you can use the same _is_near_enough function to check if the card is near the top card of the pile.
@@ -168,14 +188,17 @@ class Card(ft.GestureDetector):
                 self.turn_face_up()
         elif self.slot == self.solitaire.stock:
             # If it's the stock pile, then deal a card to the waste pile.
+            # print("Dealing a card to the waste pile.")
             self.move_on_top()
             self.place(self.solitaire.waste)
             self.turn_face_up()
+        else:
+            print("cLicker Random mate")
 
     def doublclick(self, e: ft.MultiTapEvent):
         """Double click to move a card to the foundation."""
         in_valid_slot = (self.slot in self.solitaire.tableau
-        or self.slot == self.solitaire.waste)
+                         or self.slot == self.solitaire.waste)
         if in_valid_slot:
             # check each of the foundations for a valid place.
             for slot in self.solitaire.foundations:
@@ -191,9 +214,11 @@ class Card(ft.GestureDetector):
                     return
 
             # if it failed doubleclicking randomly, punish the player with an alert
+            """
             self.solitaire.controls.append(
-            ft.AlertDialog(
-                title=ft.Text("No random clicking!"),
-                open=True,
+                ft.AlertDialog(
+                    title=ft.Text("No random clicking!"),
+                    open=True,
+                )
             )
-        )
+            """

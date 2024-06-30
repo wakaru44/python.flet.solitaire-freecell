@@ -9,6 +9,7 @@ class TestSolitaireReSizing(unittest.TestCase):
     def setUp(self):
         """Test Klondike Solitaire resizing"""
         self.solitaire = kSol()
+        self.solitaire.ratio = "4:3"
         self.solitaire.update = lambda: None  # mock update
 
     def test_resize(self):
@@ -26,6 +27,7 @@ class TestSolitaireSizing(unittest.TestCase):
     def setUp(self):
         """Test Solitaire initial sizing"""
         self.solitaire = Sol()
+        self.solitaire.ratio = "4:3"
         self.solitaire.update = lambda: None  # mock update
 
     def test_max_square_800(self):

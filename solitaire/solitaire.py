@@ -41,6 +41,12 @@ class Solitaire(ft.Stack):
         self.separator = 25  # initially only
         self.first_row = 0 # this one actually stays
         self.second_row = 150  # initially only
+        self.ratio = "16:9"
+        #self.ratio = "4:3" # kinda weird with the menu in the bottom.
+
+    def set_ratio(self, ratio):
+        """ Ratio is a string like "16:9" or "4:3" """
+        self.ratio = ratio
 
     def _max_square(self, width, height):
         """
@@ -49,9 +55,7 @@ class Solitaire(ft.Stack):
         @param height: alto de la pantalla
         @return: tupla con el ancho y alto del cuadrado maximo.
         """
-        ratio = "16:9"
-        #ratio = "4:3" # kinda weird with the menu in the bottom.
-        ratio_width, ratio_height = map(int, ratio.split(":"))
+        ratio_width, ratio_height = map(int, self.ratio.split(":"))
         if width / height > ratio_width / ratio_height:
             max_width = height * ratio_width // ratio_height
             max_height = height

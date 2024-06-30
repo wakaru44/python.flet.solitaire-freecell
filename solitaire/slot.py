@@ -25,7 +25,12 @@ class Slot(ft.Container):
         assert column_number >= 0, "column_number must be greater than or equal to 0"
         self.column_number = column_number
 
-    def resize(self, width, height):
+        # Actions
+        self.on_tap = self.click
+        self.on_tap = lambda e: print("Solitaire tapped")
+        self.on_double_tap = self.click
+
+    def resize(self, width : int, height :int ) -> None:
         self.width = width
         self.height = height
         separator = width / 3
@@ -41,6 +46,8 @@ class Slot(ft.Container):
         if len(self.pile) > 0:
             return self.pile[-1]
 
-    def click(self, e):
+    def click(self, e ) -> None:
         if self == self.solitaire.stock:
             self.solitaire.restart_stock()
+        else:
+            print("Slot clicked")

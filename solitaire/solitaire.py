@@ -28,10 +28,15 @@ class Solitaire(ft.Stack):
         self.controls = []
         self.width = SOLITAIRE_WIDTH
         self.height = SOLITAIRE_HEIGHT
-        self.seed = None
+        # self.seed = random.randint(1,32000) # win32 freecell seed range.
+        # TODO: put the proper seed stuff here.
+        self.seed = 11982  # famous seed imposible to win in freecell win32
+        print("Seed:", self.seed)
         self.max_card_width = 75  # initially only
         self.max_card_height = 100  # initially only
         self.separator = 25  # initially only
+
+        self.on_tap = lambda e: print("Solitaire tapped")
 
     def did_mount(self):
         self.create_card_deck()
@@ -175,9 +180,6 @@ class Solitaire(ft.Stack):
         """
         Get a french deck of cards and deal them to the slots.
         """
-        # self.seed = random.randint(1,32000) # win32 freecell seed range.
-        self.seed = 11982  # famous seed imposible to win in freecell win32
-        print("Seed:", self.seed)
         random.shuffle(self.cards)
         self.controls.extend(self.cards)
 

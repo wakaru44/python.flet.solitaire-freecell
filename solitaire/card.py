@@ -92,6 +92,7 @@ class Card(ft.GestureDetector):
 
             # Add the card to the new slot's pile
             slot.pile.append(card)
+            
 
         if self.solitaire.check_win():
             self.solitaire.winning_sequence()
@@ -103,13 +104,13 @@ class Card(ft.GestureDetector):
         Returns list of cards that will be dragged together starting with
         the current card.
         """
-        
+
         if (
             self.slot is not None
             and self.slot != self.solitaire.stock
             and self.slot != self.solitaire.waste
         ):
-            self.draggable_pile = self.slot.pile[self.slot.pile.index(self) :]
+            self.draggable_pile = self.slot.pile[self.slot.pile.index(self):]
         else:  # slot == None when the cards are dealed and need to be place in slot for the first time
             self.draggable_pile = [self]
 
@@ -172,14 +173,17 @@ class Card(ft.GestureDetector):
                 self.turn_face_up()
         elif self.slot == self.solitaire.stock:
             # If it's the stock pile, then deal a card to the waste pile.
+            # print("Dealing a card to the waste pile.")
             self.move_on_top()
             self.place(self.solitaire.waste)
             self.turn_face_up()
+        else:
+            print ("cLicker Random mate")
 
     def doublclick(self, e: ft.MultiTapEvent):
         """Double click to move a card to the foundation."""
         in_valid_slot = (self.slot in self.solitaire.tableau
-        or self.slot == self.solitaire.waste)
+                         or self.slot == self.solitaire.waste)
         if in_valid_slot:
             # check each of the foundations for a valid place.
             for slot in self.solitaire.foundations:
@@ -195,9 +199,11 @@ class Card(ft.GestureDetector):
                     return
 
             # if it failed doubleclicking randomly, punish the player with an alert
+            """
             self.solitaire.controls.append(
-            ft.AlertDialog(
-                title=ft.Text("No random clicking!"),
-                open=True,
+                ft.AlertDialog(
+                    title=ft.Text("No random clicking!"),
+                    open=True,
+                )
             )
-        )
+            """

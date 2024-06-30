@@ -1,5 +1,6 @@
 import flet as ft
 from solitaire import Solitaire
+from solitaire.menu import MyMenu
 
 
 def main(page: ft.Page):
@@ -20,9 +21,12 @@ def main(page: ft.Page):
         page.update()
 
     solitaire = Solitaire()
+    menubar = MyMenu(controls=None, solitaire=solitaire)
 
     page.on_resize = page_resize
+
     page.add(solitaire)
+    page.add(ft.Row([menubar]))
 
 
 ft.app(target=main, assets_dir="assets")

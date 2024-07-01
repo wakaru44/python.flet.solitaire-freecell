@@ -26,6 +26,8 @@ de todas maneras es tedioso.
 
 - the original 32k, in python <https://rosettacode.org/wiki/Deal_cards_for_FreeCell>
 
+- Un monton de juegos dificiles y faciles <https://www.solitairelaboratory.com/fclists.html>
+
 ### De todas las posibles combinaciones, hay repetidas
 
 si tomamos las 52! combinaciones (8x10^67) de cartas, en 8 columnas repetibles,
@@ -51,7 +53,7 @@ y las cartas usan 'on_tap' y los containers 'on_click'. o algo asi.
 - [x] Feat: Implantar 'New Game' y refactorizar componentes.
 - [x] UI: el resize parece que se ha roto, quiza despues de 'new game'. era problema de que no se estaba eliminanndo.
 - [x] Feat: crear nuevos juegos.
-- [ ] Feat: Escribir un solitario free cell
+- [~] Feat: Escribir un solitario free cell
 - [ ] Crear un menu de opciones un poco decente.
 - [ ] Bug: el envio automatico en klondike se salta algunas normas y coloca cartas fuera de orden.
 - [ ] UI: the menu dosnt close when clicking.

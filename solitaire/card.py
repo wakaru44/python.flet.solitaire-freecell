@@ -55,10 +55,8 @@ class Card(ft.GestureDetector):
         self.width = width
         self.height = height
         self.card_offset = card_offset
-        if self.is_on_stock() or self.is_on_waste():
-            offset = 0
-        else:
-            offset = self.card_offset
+        # El offset es el espacio entre cartas. en realidad depende del row.
+        offset = self.slot.row * self.card_offset
         self.top = (
             (self.slot.pile.index(self) * offset)
             + (self.height + self.card_offset) * self.slot.row
@@ -129,6 +127,7 @@ class Card(ft.GestureDetector):
 
         if (
             self.slot is not None
+            # TODO: we can't depend on stock and waste, generalis efor freecell too.
             and self.slot != self.solitaire.stock
             and self.slot != self.solitaire.waste
         ):

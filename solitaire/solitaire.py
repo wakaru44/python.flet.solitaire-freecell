@@ -1,5 +1,6 @@
 
 import random
+from copy import deepcopy
 
 import flet as ft
 # from card import Card
@@ -157,6 +158,27 @@ class Solitaire(ft.Stack):
                     )
                 )
 
+    def ms_random_generator(self, seed=1):
+        """
+        taken from 
+        https://rosettacode.org/wiki/Deal_cards_for_FreeCell#Python
+        """
+        max_int32 = (1 << 31) - 1
+        seed = seed & max_int32
+
+        while True:
+            seed = (seed * 214013 + 2531011) & max_int32
+            yield seed >> 16
+        
+    def ms_shuffle(self, seed):
+        nc = len(self.cards)
+        cards = list(range(nc - 1, -1, -1))
+        rnd = self.ms_random_generator(seed)
+        for i, r in zip(range(nc), rnd):
+            j = (nc - 1) - r % (nc - i)
+            cards[i], cards[j] = cards[j], cards[i]
+        self.cards = cards
+        return cards
 
 class KlondikeSolitaire(Solitaire):
     def __init__(self, width=None, height=None, seed: int = 11982):
@@ -227,8 +249,7 @@ class KlondikeSolitaire(Solitaire):
         """
         Get a french deck of cards and deal them to the slots.
         """
-        print("Dealing cards... Seed: ", self.seed)
-        random.shuffle(self.cards)
+        # Cards sholud be shuffled before dealing.
         self.controls.extend(self.cards)
 
         # deal to tableau
@@ -253,7 +274,7 @@ class KlondikeSolitaire(Solitaire):
 
         self.update()
         print("Cards have been dealed.")
-        #print(self.tableau)
+        # print(self.tableau)
         # recursively print the tableau slots and number of cards in each slot, with list comprehension
         print([len(slot.pile) for slot in self.tableau])
 
@@ -354,7 +375,7 @@ class FreeCellSolitaire(Solitaire):
 
         self.foundations = []
         x = (self.max_card_width + self.separator) \
-            * 5  # foundations starts in the 6th column
+            * 4  # foundations starts in the 6th column
         for i in range(4):
             self.foundations.append(
                 Slot(
@@ -366,7 +387,7 @@ class FreeCellSolitaire(Solitaire):
                     row=0
                 )
             )
-            x += (self.max_card_width + self.separator)
+            x += (self.max_card_width + self.separator/2)
 
         self.free_cells = []
         x = 0
@@ -381,10 +402,11 @@ class FreeCellSolitaire(Solitaire):
                     row=0
                 )
             )
-            x += (self.max_card_width + self.separator)
+            x += (self.max_card_width + self.separator/2)
 
         self.tableau = []
-        x = 0 + self.separator  # Slightly offset to the right
+        x = 0 + (self.separator)  # Slightly offset to the right
+
         for i in range(8):
             self.tableau.append(
                 Slot(
@@ -396,23 +418,81 @@ class FreeCellSolitaire(Solitaire):
                     row=1
                 )
             )
-            x += (self.max_card_width + self.separator)
+            x += (self.max_card_width + self.separator/2)
 
         self.controls.extend(self.foundations)
         self.controls.extend(self.free_cells)
         self.controls.extend(self.tableau)
+        self.slots = [*self.foundations, *self.free_cells, *self.tableau]
 
     def deal_cards(self):
-        pass
+        """
+        Get a french deck of cards and deal them
+        face up, to the tableau slots, 6-7 cards each.
+
+        It goes card by card, dealing one to each tableau slot.
+        untill the 4 on the left have 7 cards and the 4 on the right have 6.
+
+        """
+        print("Dealing FreeCell cards... Seed: ", self.seed)
+        random.shuffle(self.cards)
+        self.controls.extend(self.cards)
+
+        # deal to tableau
+        current_slot = 0
+        remaining_cards = self.cards
+
+        while len(remaining_cards) > 0:
+            for idx, slot in enumerate(self.tableau):
+                try:
+                    top_card = remaining_cards[0]
+                except IndexError:
+                    break
+                top_card.turn_face_up()
+                top_card.place(slot)
+                remaining_cards.remove(top_card)
+
+        # copy the slots as they are for backup and restore of the game.
+        self.backup_slots = deepcodpy(self.slots)
 
     def check_foundations_rules(self, card, slot):
-        pass
+        """
+        Validate that the card can be placed in the top foundations slots.
+        """
+        top_card = slot.get_top_card()
+        if top_card is not None:
+            is_same_suite = card.suite.name == top_card.suite.name
+            is_one_rank_higher = card.rank.value - top_card.rank.value == 1
+            return is_same_suite and is_one_rank_higher
+        else:
+            return card.rank.name == "Ace"
 
     def check_tableau_rules(self, card, slot):
-        pass
+        """
+        Validate that the card can be placed in the tableau slots.
+        A card has to be of alternating color,
+        decrease in rank by 1
+        and be face up.
+        """
+        top_card = slot.get_top_card()
+        if top_card is not None:
+            is_different_color = card.suite.color != top_card.suite.color
+            is_one_rank_lower = top_card.rank.value - card.rank.value == 1
+            return is_different_color and is_one_rank_lower and top_card.face_up
+        else:
+            return card.rank.name == "King"
 
     def check_win(self):
-        pass
+        """
+        Check if the player has won the game.
+        """
+        cards_num = 0
+        for slot in self.foundations:
+            cards_num += len(slot.pile)
+        if cards_num == 52:
+            return True
+        # Or fail
+        return False
 
     def fly_card(self, card):
         pass
